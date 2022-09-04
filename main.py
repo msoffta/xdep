@@ -11,9 +11,10 @@ bot = Bot(token=config.BOT_TOKEN)
 dp = Dispatcher(bot)
 
 
+
 async def on_startup(dp):
-    await dbm.connect("B:\\xdep\main.sqlite")
-    await bot.send_message(config.BOT_OWNER, "Bot Started")
+    await dbm.connect("main.sqlite")
+    await bot.send_message(config.BOT_LOG, "Bot Started")
 
 
 @dp.message_handler(commands='start')
