@@ -14,6 +14,9 @@ if not config.BOT_TOKEN:
 bot = Bot(token=config.BOT_TOKEN, parse_mode="HTML")
 dp = Dispatcher(bot)
 
+async def on_startup(dp):
+    await bot.send_message(config.BOT_LOG, "Бот запущен")
+
 # activate filters
 dp.filters_factory.bind(IsOwnerFilter)
 dp.filters_factory.bind(IsAdminFilter)
