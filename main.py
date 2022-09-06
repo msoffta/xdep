@@ -1,5 +1,7 @@
 import logging
 from aiogram import executor, Dispatcher, Bot, types
+from aiogram.types import ReplyKeyboardMarkup
+
 import config
 from dbm import BOT_DB
 
@@ -19,8 +21,14 @@ async def on_startup(dp):
 
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
-    await message.answer("Hello there \nLemme register you")
-    db.add_user(message.from_user.id)
+    await message.answer("Здравствуйте")
+    if(not db.user_exist(message.from_user.id)):
+        db.add_user(message.from_user.id)
+        await message.answer("Я зарегестрировал вас")
+    reply = ReplyKeyboardMarkup()
+    btn1 = "Узнать время"
+    reply.add(btn1)
+    await message.answer("Выберите действие", reply_markup=reply)
 
 
 if __name__ == '__main__':

@@ -8,6 +8,9 @@ class BOT_DB:
         self.c = sqlite3.connect(db_file)
         self.cur = self.c.cursor()
     
+    def user_exist(self, user_id):
+        exist = self.cur.execute("SELECT user_id FROM users WHERE user_id = ?",(user_id,))
+        return bool(len(exist.fetchall()))
 
     def add_user(self, user_id):
         self.cur.execute("INSERT INTO 'users' ('user_id') VALUES (?)", (user_id,))
