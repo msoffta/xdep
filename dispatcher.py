@@ -1,5 +1,5 @@
 import logging
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from filters import IsOwnerFilter, IsAdminFilter, MemberCanRestrictFilter
 import config
 
@@ -11,11 +11,11 @@ if not config.BOT_TOKEN:
     exit("No token provided")
 
 # init
-bot = Bot(token=config.BOT_TOKEN, parse_mode="HTML")
-dp = Dispatcher(bot)
+cot = Bot(token=config.BOT_TOKEN)
+dp = Dispatcher(cot)
 
 async def on_startup(dp):
-    await bot.send_message(config.BOT_LOG, "Бот запущен")
+    await cot.send_message(config.BOT_LOG, "Бот запущен")
 
 # activate filters
 dp.filters_factory.bind(IsOwnerFilter)
