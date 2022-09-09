@@ -8,13 +8,6 @@ import config
 
 db = BOT_DB("users.db")
 
-@dp.message_handler(content_types='text')
-async def filter(message: types.Message):
-    f = open('')
-    await message.answer('Ты что совсем INSANE?'
-                     '\n Не матерись')
-    await bot.delete_message(message.chat.id, message.message_id)
-
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
     if(not db.user_exist(message.from_user.id)):
