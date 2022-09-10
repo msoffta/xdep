@@ -8,23 +8,27 @@ import config
 
 db = BOT_DB("users.db")
 
+
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
-    if(not db.user_exist(message.from_user.id)):
+    if not db.user_exist(message.from_user.id):
         db.add_user(message.from_user.id)
-    if message.chat.type == ['group','supergroup']:
+    if message.chat.type == 'supergroup':
         inline = InlineKeyboardMarkup()
         btn1 = InlineKeyboardButton("Добавить в чат", url='https://t.me/xdepbot?startgroup=new')
         inline.add(btn1)
-        await message.answer("Привет, я многофункциональный бот добавь меня в свой чат", reply_markup=inline)
-    if message.chat.type != 'private':
+        await message.answer("Привет ^>^"
+                             "\n Все команды /help", reply_markup=inline)
+    if message.chat.type == 'private':
         inline = InlineKeyboardMarkup()
         btn1 = InlineKeyboardButton("Добавить в чат", url='https://t.me/xdepbot?startgroup=new')
         inline.add(btn1)
-        await message.answer("Привет, я многофункциональный бот добавь меня в свой чат", reply_markup=inline)
-        await message.answer('Внизу вы можете настроить конфигурации')
+        await message.answer("Привет ^>^"
+                             "\nP.S (Текст еще не придумал извини)", reply_markup=inline)
+        await message.answer('Внизу вы можете настроить конфигурации для бота')
 
-@dp.message_handler(commands='info')
+
+@dp.message_handler(commands='help')
 async def info(message: types.Message):
     inline = InlineKeyboardMarkup(row_width=2)
     btn1 = InlineKeyboardButton("Создатель", url="t.me/theHero_7")
@@ -36,11 +40,13 @@ async def info(message: types.Message):
         /mute !mute .mute
         /pin  !pin  .pin
         /id   !id   .id
+        /promote  
                           \nОсновные игровые команды:
             Недоступно
         В будущих обновлениях""", reply_markup=inline)
 
-@dp.message_handler(is_admin=True,commands=['ban','бан'], commands_prefix=['!', '.','/'])
+
+@dp.message_handler(is_admin=True, commands=['ban', 'бан'], commands_prefix=['!', '.', '/'])
 async def ban_action(message: types.Message):
     if not message.reply_to_message:
         await message.reply("Вы должны ответить на сообщение")
@@ -48,7 +54,9 @@ async def ban_action(message: types.Message):
 
     await bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
     await message.reply_to_message.reply(f"Вы забанены @{message.reply_to_message.from_user.username}")
-@dp.message_handler(is_admin=True, commands=['kick','кик'], commands_prefix=['!','.','/'])
+
+
+@dp.message_handler(is_admin=True, commands=['kick', 'кик'], commands_prefix=['!', '.', '/'])
 async def kick_action(message: types.Message):
     if not message.reply_to_message:
         await message.reply("Вы должны ответеть на сообщение")
@@ -56,7 +64,8 @@ async def kick_action(message: types.Message):
     await bot.kick_chat_member(message.chat.id, message.reply_to_message.from_user.id)
     await message.reply_to_message.reply(f"Вас выгнали @{message.reply_to_message.from_user.username}")
 
-@dp.message_handler(is_admin=True, commands=['mute','мут'], commands_prefix=['!','.','/'])
+
+@dp.message_handler(is_admin=True, commands=['mute', 'мут'], commands_prefix=['!', '.', '/'])
 async def mute_action(message: types.Message):
     if not message.reply_to_message:
         await message.reply("Вы должны ответеть на сообщение")
@@ -67,17 +76,16 @@ async def mute_action(message: types.Message):
                                          "\n Всегда думаете о чем говорите и присылаете"
                                          "\n Соблюдайте правила :)")
 
-@dp.message_handler(is_admin=True, commands=['pin', 'пин'], commands_prefix=['!','.','/'])
+
+@dp.message_handler(is_admin=True, commands=['pin', 'пин'], commands_prefix=['!', '.', '/'])
 async def pin_action(message: types.Message):
     if not message.reply_to_message:
         await message.reply("Вы должны ответеть на сообщение")
-    await bot.pin_chat_message(message.chat.id, message.message_id)
+    await bot.pin_chat_message(message.chat.id, message.reply_to_message.message_id)
     await message.reply_to_message.reply("Закреплено")
 
 
-
-
-@dp.message_handler(is_admin=True, commands=['id', 'айди'], commands_prefix=['!','.','/'])
+@dp.message_handler(is_admin=True, commands=['id', 'айди'], commands_prefix=['!', '.', '/'])
 async def id_action(message: types.Message):
     id_chat = message.chat.id
     msg_id = message.message_id
@@ -88,8 +96,29 @@ async def id_action(message: types.Message):
                              f"\n Айди юзера: {user_id}")
     if not message.reply_to_message:
         await message.answer(f"Айди чата: {id_chat}"
-                         f"\n Айди сообщения: {msg_id}")
+                             f"\n Айди сообщения: {msg_id}")
 
-@dp.message_handler(content_types=['new_chat_members','pinned_message',])
+
+@dp.message_handler(content_types=['new_chat_members', 'pinned_message'])
 async def delete_message(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
+
+
+@dp.message_handler(is_admin=True, commands=['promote'])
+async def promote(message: types.Message):
+    try:
+        title = message.text.replace('/promote ', '').strip()
+        await bot.promote_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id,
+                                      is_anonymous=False,
+                                      can_manage_chat=True,
+                                      can_change_info=True,
+                                      can_delete_messages=True,
+                                      can_invite_users=True,
+                                      can_restrict_members=True,
+                                      can_pin_messages=True)
+        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id, title)
+        await message.reply_to_message.reply(f"Вы стали администратором чата"
+                                             f"\nС префиксом {title}")
+    except Exception as error:
+        await message.answer(f"Я не смог дать права администратора @{message.reply_to_message.from_user.username}"
+                             f"\n P.S Вот причина: {error}")

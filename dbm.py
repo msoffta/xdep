@@ -15,3 +15,13 @@ class BOT_DB:
     def add_user(self, user_id):
         self.cur.execute("INSERT INTO 'users' ('user_id') VALUES (?)", (user_id,))
         return self.c.commit()
+
+    def wel_state(self, choose):
+        self.cur.execute("INSERT INTO 'users' ('wel_state') VALUES (?)", (choose,))
+        return self.c.commit()
+    def wel_text(self, text):
+        self.cur.execute("INSERT INTO 'users' ('wel_state') VALUES (?)", (text,))
+        return self.c.commit()
+    def get(self):
+        brb =  self.cur.execute("SELECT * FROM promote")
+        return brb.fetchall()
