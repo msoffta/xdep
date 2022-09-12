@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 import config
+from dispatcher import bot, dp
 
 class BOT_DB:
 
@@ -16,12 +17,12 @@ class BOT_DB:
         self.cur.execute("INSERT INTO 'users' ('user_id') VALUES (?)", (user_id,))
         return self.c.commit()
 
-    def wel_state(self, choose):
-        self.cur.execute("INSERT INTO 'users' ('wel_state') VALUES (?)", (choose,))
+    def addfilter(self, filters, videoid=None, photoid=None, audioid=None, document=None, filtext=None):
+        self.cur.execute("INSERT INTO 'users' ('filters','video','photo','audio','document','filtext') VALUES (?, ?, ?, ?, ?, ?)",
+                                  (filters, videoid, photoid, audioid, document, filtext,))
         return self.c.commit()
-    def wel_text(self, text):
-        self.cur.execute("INSERT INTO 'users' ('wel_state') VALUES (?)", (text,))
-        return self.c.commit()
-    def get(self):
-        brb =  self.cur.execute("SELECT * FROM promote")
-        return brb.fetchall()
+
+    def getfilter(self):
+        filters = self.cur.execute("SELECT filters FROM users")
+        return filters.fetchall()
+

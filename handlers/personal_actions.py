@@ -7,7 +7,7 @@ from dispatcher import dp, bot
 import config
 
 db = BOT_DB("users.db")
-
+text = ''
 
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
@@ -25,7 +25,7 @@ async def start(message: types.Message):
         inline.add(btn1)
         await message.answer("Привет ^>^"
                              "\nP.S (Текст еще не придумал извини)", reply_markup=inline)
-        await message.answer('Внизу вы можете настроить конфигурации для бота')
+        await message.answer('И да все фичи доступны когда бот в чате')
 
 
 @dp.message_handler(commands='help')
@@ -122,3 +122,34 @@ async def promote(message: types.Message):
     except Exception as error:
         await message.answer(f"Я не смог дать права администратора @{message.reply_to_message.from_user.username}"
                              f"\n P.S Вот причина: {error}")
+
+
+@dp.message_handler(commands=['addfilter'],content_types=['text','video','audio','photo','document'])
+async def addfilter(message: types.Message):
+    global text
+    text = message.text.replace('/addfilter', '')
+    if(not message.reply_to_message):
+        await message.answer("Вы должны ответить на сообщение")
+    if message.reply_to_message.content_type == 'photo':
+        photo_id = message.reply_to_message.photo[-1].file_id
+        db.addfilter(filters=text, photoid=photo_id)
+    if message.reply_to_message.content_type == 'video':
+        video_id = message.video.file_id
+        db.addfilter(filters=text, videoid=video_id)
+    if message.reply_to_message.content_type == 'audio':
+        audio_id = message.audio.file_id
+        db.addfilter(filters=text, audioid=audio_id)
+    if message.reply_to_message.content_type == 'text':
+        filtext = message.reply_to_message.text
+        db.addfilter(filters=text, filtext=filtext)
+    if message.reply_to_message.content_type == 'document':
+        document = message.reply_to_message.document
+        db.addfilter(filters=text, document=document)
+    await message.answer("Фильтр добавлен")
+
+@dp.message_handler(content_types='text')
+async def filter(message: types.Message):
+    x = db.getfilter()
+    for row in x:
+        if message.text in row[-1]:
+            await message.answer("None")
