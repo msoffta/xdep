@@ -17,12 +17,13 @@ class BOT_DB:
         self.cur.execute("INSERT INTO 'users' ('user_id') VALUES (?)", (user_id,))
         return self.c.commit()
 
-    def addfilter(self, filters, videoid=None, photoid=None, audioid=None, document=None, filtext=None):
-        self.cur.execute("INSERT INTO 'users' ('filters','video','photo','audio','document','filtext') VALUES (?, ?, ?, ?, ?, ?)",
-                                  (filters, videoid, photoid, audioid, document, filtext,))
+    def addfilter(self, filters, filter_msg):
+        self.cur.execute("INSERT INTO 'users' ('filters', 'filter_msg') VALUES (?, ?)", (filters, filter_msg,))
         return self.c.commit()
 
     def getfilter(self):
         filters = self.cur.execute("SELECT filters FROM users")
         return filters.fetchall()
-
+    def getfilter_msg(self):
+        filter_msg = self.cur.execute("SELECT filter_msg FROM users")
+        return filter_msg.fetchall()

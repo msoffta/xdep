@@ -7,12 +7,9 @@ from dispatcher import dp, bot
 import config
 
 db = BOT_DB("users.db")
-text = ''
 
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
-    if not db.user_exist(message.from_user.id):
-        db.add_user(message.from_user.id)
     if message.chat.type == 'supergroup':
         inline = InlineKeyboardMarkup()
         btn1 = InlineKeyboardButton("Добавить в чат", url='https://t.me/xdepbot?startgroup=new')
@@ -124,32 +121,33 @@ async def promote(message: types.Message):
                              f"\n P.S Вот причина: {error}")
 
 
-@dp.message_handler(commands=['addfilter'],content_types=['text','video','audio','photo','document'])
+@dp.message_handler(commands=['addfilter'],content_types=['text', 'video', 'audio', 'photo', 'document'])
 async def addfilter(message: types.Message):
-    global text
     text = message.text.replace('/addfilter', '')
     if(not message.reply_to_message):
         await message.answer("Вы должны ответить на сообщение")
     if message.reply_to_message.content_type == 'photo':
         photo_id = message.reply_to_message.photo[-1].file_id
-        db.addfilter(filters=text, photoid=photo_id)
+        db.addfilter(filters=text, filter_msg=photo_id)
     if message.reply_to_message.content_type == 'video':
-        video_id = message.video.file_id
-        db.addfilter(filters=text, videoid=video_id)
+        video_id = message.reply_to_message.video.file_id
+        db.addfilter(filters=text, filter_msg=video_id)
     if message.reply_to_message.content_type == 'audio':
-        audio_id = message.audio.file_id
-        db.addfilter(filters=text, audioid=audio_id)
+        audio_id = message.reply_to_message.audio.file_id
+        db.addfilter(filters=text, filter_msg=audio_id)
     if message.reply_to_message.content_type == 'text':
-        filtext = message.reply_to_message.text
-        db.addfilter(filters=text, filtext=filtext)
+        filtext = message.text
+        db.addfilter(filters=text, filter_msg=filtext)
     if message.reply_to_message.content_type == 'document':
-        document = message.reply_to_message.document
-        db.addfilter(filters=text, document=document)
+        document = message.reply_to_message.document.file_id
+        db.addfilter(filters=text, filter_msg=document)
     await message.answer("Фильтр добавлен")
 
 @dp.message_handler(content_types='text')
 async def filter(message: types.Message):
     x = db.getfilter()
+    f = db.getfilter_msg()
     for row in x:
-        if message.text in row[-1]:
-            await message.answer("None")
+        for row1 in f:
+            if message.text in row[-1]:
+                await message.answer_photo(row1[-1])
