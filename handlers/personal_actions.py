@@ -128,26 +128,70 @@ async def addfilter(message: types.Message):
         await message.answer("Вы должны ответить на сообщение")
     if message.reply_to_message.content_type == 'photo':
         photo_id = message.reply_to_message.photo[-1].file_id
-        db.addfilter(filters=text, filter_msg=photo_id)
+        db.addfilter(filters=text, filter_msg=photo_id, state=2)
     if message.reply_to_message.content_type == 'video':
         video_id = message.reply_to_message.video.file_id
-        db.addfilter(filters=text, filter_msg=video_id)
+        db.addfilter(filters=text, filter_msg=video_id, state=3)
     if message.reply_to_message.content_type == 'audio':
         audio_id = message.reply_to_message.audio.file_id
-        db.addfilter(filters=text, filter_msg=audio_id)
+        db.addfilter(filters=text, filter_msg=audio_id, state=4)
     if message.reply_to_message.content_type == 'text':
-        filtext = message.text
-        db.addfilter(filters=text, filter_msg=filtext)
+        filtext = message.reply_to_message.text
+        db.addfilter(filters=text, filter_msg=filtext, state=1)
     if message.reply_to_message.content_type == 'document':
         document = message.reply_to_message.document.file_id
-        db.addfilter(filters=text, filter_msg=document)
+        db.addfilter(filters=text, filter_msg=document, state=5)
     await message.answer("Фильтр добавлен")
 
-@dp.message_handler(content_types='text')
-async def filter(message: types.Message):
-    x = db.getfilter()
-    f = db.getfilter_msg()
-    for row in x:
-        for row1 in f:
-            if message.text in row[-1]:
-                await message.answer_photo(row1[-1])
+@dp.message_handler(is_admin=True, commands='dmute', commands_prefix=['!', '.', '/'])
+async def dmute(message: types.Message):
+    if not message.reply_to_message:
+        await message.answer("ВЫ должны ответить на сообщение")
+    try:
+        await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id,
+                                       can_send_messages=False)
+        await message.reply_to_message.delete()
+        await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
+                             f"{message.reply_to_message.from_user.id},"
+                             f"{message.reply_to_message.from_user.first_name} "
+                             f"\nбыл ограничен и его сообщение были удалены ")
+    except Exception as e:
+        await message.answer(f"Я не могу ограничить и удалить его сообщение"
+                             f"\n Причина: {e}")
+@dp.message_handler(is_admin=True, commands='dban', commands_prefix=['!','.' ,'/'])
+async def dban(message: types.Message):
+    if not message.reply_to_message:
+        await message.answer("ВЫ должны ответить на сообщение")
+    try:
+        await bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id,
+                                       can_send_messages=False)
+        await message.reply_to_message.delete()
+        await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
+                             f"{message.reply_to_message.from_user.id},"
+                             f"{message.reply_to_message.from_user.first_name} "
+                             f"\nбыл забанен и его сообщение были удалены ")
+    except Exception as e:
+        await message.answer(f"Я не могу забанить и удалить его сообщение"
+                             f"\n Причина: {e}")
+
+@dp.message_handler(is_admin=True, commands='dkick', commands_prefix=['!','.' ,'/'])
+async def dkick(message: types.Message):
+    if not message.reply_to_message:
+        await message.answer("ВЫ должны ответить на сообщение")
+    try:
+        await bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id,
+                                       can_send_messages=False)
+        await message.reply_to_message.delete()
+        await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
+                             f"{message.reply_to_message.from_user.id},"
+                             f"{message.reply_to_message.from_user.first_name} "
+                             f"\nбыл кикнут и его сообщение были удалены ")
+    except Exception as e:
+        await message.answer(f"Я не могу выгнать и удалить его сообщение"
+                             f"\n Причина: {e}")
+
+@dp.message_handler(commands='send')
+async def send(message: types.Message):
+    text = message.text.replace('/send', '')
+    await bot.delete_message(message.chat.id, message.message_id)
+    await message.answer(text)
