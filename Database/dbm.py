@@ -5,9 +5,8 @@ from dispatcher import bot, dp
 
 
 class BOT_DB:
-
-    def __init__(self, db_file):
-        self.c = sqlite3.connect(db_file)
+    def __init__(self):
+        self.c = sqlite3.connect('Database/users.db')
         self.cur = self.c.cursor()
 
     def user_exist(self, user_id):
@@ -23,8 +22,8 @@ class BOT_DB:
                          (filters, filter_msg, state,))
         return self.c.commit()
 
-    def getfilter(self):
-        filters = self.cur.execute("SELECT filters FROM users")
+    def getfilter(self, msg):
+        filters = self.cur.execute("SELECT filters FROM users WHERE filters = (?)", (msg,))
         return filters.fetchall()
 
     def getfilter_msg(self):
