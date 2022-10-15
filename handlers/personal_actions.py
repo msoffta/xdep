@@ -72,7 +72,7 @@ async def delete_message(message: types.Message):
 @dp.message_handler(is_admin=True, commands=['promote'])
 async def promote(message: types.Message):
     try:
-        title = message.text.replace('/promote ', '').strip()
+        title = message.get_args()
         await bot.promote_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id,
                                       is_anonymous=False,
                                       can_manage_chat=True,
@@ -81,7 +81,7 @@ async def promote(message: types.Message):
                                       can_invite_users=True,
                                       can_restrict_members=True,
                                       can_pin_messages=True)
-        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id, title)
+        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id, prefix = (title if title)
         await message.reply_to_message.reply(f"Вы стали администратором чата"
                                              f"\nС префиксом {title}")
     except Exception as error:
