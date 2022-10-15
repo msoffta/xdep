@@ -81,7 +81,7 @@ async def promote(message: types.Message):
                                       can_invite_users=True,
                                       can_restrict_members=True,
                                       can_pin_messages=True)
-        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id, prefix = (title if title))
+        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id, prefix = (title if title else "Админ"))
         await message.reply_to_message.reply(f"Вы стали администратором чата"
                                              f"\nС префиксом {title}")
     except Exception as error:
