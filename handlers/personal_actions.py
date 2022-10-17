@@ -9,7 +9,7 @@ db = BOT_DB()
 
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
-    await message.answer_sticker('CAADAgADQQADPIpXGiCbHYE8KiBgAg')
+    await message.answer('пон')
 
 
 @dp.message_handler(is_admin=True, commands=['ban', 'бан'], commands_prefix=['!', '.', '/'])
