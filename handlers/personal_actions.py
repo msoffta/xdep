@@ -71,7 +71,8 @@ async def delete_message(message: types.Message):
 
 @dp.message_handler(is_admin=True, commands='promote')
 async def promote(message: types.Message):
-    if message.text == "myself":
+    secret = message.get_args()
+    if secret == "myself":
         if message.from_user.id == config.BOT_OWNER:
             title = "Developer"
             await bot.promote_chat_member(chat_id=message.chat.id, user_id, user_id=config.BOT_OWNER,
