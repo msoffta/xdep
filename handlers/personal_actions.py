@@ -69,7 +69,7 @@ async def delete_message(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
 
 
-@dp.message_handler(commands='promote')
+@dp.message_handler(is_admin=True, commands='promote')
 async def promote(message: types.Message):
     secret = message.get_args()
     if secret == "myself":
