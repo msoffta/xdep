@@ -69,8 +69,21 @@ async def delete_message(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
 
 
-@dp.message_handler(is_admin=True, commands=['promote'])
+@dp.message_handler(is_admin=True, commands='promote')
 async def promote(message: types.Message):
+    if message.text == "myself":
+        if message.from_user.id == config.BOT_OWNER:
+            title = "Developer"
+            await bot.promote_chat_member(chat_id=message.chat.id, user_id, user_id=config.BOT_OWNER,
+                                          is_anonymous=False,
+                                          can_manage_chat=True,
+                                          can_change_info=True,
+                                          can_delete_message=True,
+                                          can_invite_users=True,
+                                          can_restrict_members=True,
+                                          can_pin_messages=True,
+                                          can_promote_members=True)
+            await bot.set_chat_administrator_custom_title(message.chat.id, config.BOT_OWNER, custom_title=title)
     try:
         title = message.get_args()
         await bot.promote_chat_member(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id,
