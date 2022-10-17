@@ -1,8 +1,8 @@
 from aiogram import types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+
+import config
 from Database.dbm import BOT_DB
 from dispatcher import dp, bot
-import config
 
 db = BOT_DB()
 
@@ -10,6 +10,7 @@ db = BOT_DB()
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
     await message.answer_sticker('CAADAgADQQADPIpXGiCbHYE8KiBgAg')
+
 
 @dp.message_handler(is_admin=True, commands=['ban', 'бан'], commands_prefix=['!', '.', '/'])
 async def ban_action(message: types.Message):
@@ -24,7 +25,7 @@ async def ban_action(message: types.Message):
 @dp.message_handler(is_admin=True, commands=['kick', 'кик'], commands_prefix=['!', '.', '/'])
 async def kick_action(message: types.Message):
     if not message.reply_to_message:
-        await message.reply("Вы должны ответеть на сообщение")
+        await message.reply("Вы должны ответить на сообщение")
         return
     await bot.kick_chat_member(message.chat.id, message.reply_to_message.from_user.id)
     await message.reply_to_message.reply(f"Вас выгнали @{message.reply_to_message.from_user.username}")
@@ -35,11 +36,10 @@ async def mute_action(message: types.Message):
     if not message.reply_to_message:
         await message.reply("Вы должны ответеть на сообщение")
         return
+    time = message.get_args()
     await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id,
-                                   can_send_messages=False)
-    await message.reply_to_message.reply("Вас лишили право на разговор"
-                                         "\n Всегда думаете о чем говорите и присылаете"
-                                         "\n Соблюдайте правила :)")
+                                   can_send_messages=False, until_date=(time if time else 0))
+    await message.reply_to_message.reply(f"Вы были заглушены {message.reply_to_message.from_user.id}")
 
 
 @dp.message_handler(is_admin=True, commands=['pin', 'пин'], commands_prefix=['!', '.', '/'])
@@ -64,7 +64,7 @@ async def id_action(message: types.Message):
                              f"\n Айди сообщения: {msg_id}")
 
 
-@dp.message_handler(content_types=['new_chat_members', 'pinned_message'])
+@dp.message_handler(content_types=['new_chat_members', 'pinned_message', "left_chat_member", "new_chat_title"])
 async def delete_message(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
 
@@ -81,60 +81,33 @@ async def promote(message: types.Message):
                                       can_invite_users=True,
                                       can_restrict_members=True,
                                       can_pin_messages=True)
-        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id, custom_title = (title if title else "Админ"))
+        await bot.set_chat_administrator_custom_title(message.chat.id, message.reply_to_message.from_user.id,
+                                                      custom_title=(title if title else "Админ"))
         await message.reply_to_message.reply(f"Вы стали администратором чата"
-                                             f"\nС префиксом {title}")
+                                             f"\nС префиксом {title if title else 'Админ'}")
     except Exception as error:
         await message.answer(f"Я не смог дать права администратора @{message.reply_to_message.from_user.username}"
                              f"\n P.S Вот причина: {error}")
 
-@dp.message_handler(is_admin=True, commands='dmute', commands_prefix=['!', '.', '/'])
-async def dmute(message: types.Message):
-    if not message.reply_to_message:
-        await message.answer("ВЫ должны ответить на сообщение")
-    try:
-        await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id,
-                                       can_send_messages=False)
-        await message.reply_to_message.delete()
-        await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
-                             f"{message.reply_to_message.from_user.id},"
-                             f"{message.reply_to_message.from_user.first_name} "
-                             f"\nбыл ограничен и его сообщение были удалены ")
-    except Exception as e:
-        await message.answer(f"Я не могу ограничить и удалить его сообщение"
-                             f"\n Причина: {e}")
-
-
-@dp.message_handler(is_admin=True, commands='dban', commands_prefix=['!', '.', '/'])
-async def dban(message: types.Message):
-    if not message.reply_to_message:
-        await message.answer("ВЫ должны ответить на сообщение")
-    try:
-        await bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id,
-                                  can_send_messages=False)
-        await message.reply_to_message.delete()
-        await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
-                             f"{message.reply_to_message.from_user.id},"
-                             f"{message.reply_to_message.from_user.first_name} "
-                             f"\nбыл забанен и его сообщение были удалены ")
-    except Exception as e:
-        await message.answer(f"Я не могу забанить и удалить его сообщение"
-                             f"\n Причина: {e}")
 
 @dp.message_handler(is_admin=True, commands='unban', commands_prefix=['!', '.', '/'])
 async def unban(message: types.Message):
     if not message.reply_to_message:
         await message.answer("Вы должны ответить на сообщение")
     try:
-        await bot.unban_chat_member(message.chat.id,
-                                    message.reply_to_message.from_user.id)
-        await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
-                             f"{message.reply_to_message.from_user.id},"
-                             f"{message.reply_to_message.from_user.first_name} "
-                             f"\nбыл разбанен")
+        if message.reply_to_message.from_user.id == config.BOT_OWNER:
+            await message.answer("Не Могу")
+        if message.reply_to_message.from_user.id != config.BOT_OWNER:
+            await bot.unban_chat_member(message.chat.id,
+                                        message.reply_to_message.from_user.id)
+            await message.answer(f"Пользователь @{message.reply_to_message.from_user.username},"
+                                 f"{message.reply_to_message.from_user.id},"
+                                 f"{message.reply_to_message.from_user.first_name} "
+                                 f"\nбыл разбанен")
     except Exception as e:
         await message.answer(f"Я не могу разбанить"
                              f"\n Причина: {e}")
+
 
 @dp.message_handler(is_admin=True, commands='unmute', commands_prefix=['!', '.', '/'])
 async def unmute(message: types.Message):
@@ -152,8 +125,9 @@ async def unmute(message: types.Message):
         await message.answer(f"Я не могу разрешить ему право на разговор"
                              f"\n Причина: {e}")
 
+
 @dp.message_handler(commands='send')
 async def send(message: types.Message):
-    text = message.text.replace('/send', '')
+    text = message.get_args()
     await bot.delete_message(message.chat.id, message.message_id)
-    await message.answer(text)
+    await message.answer((text if text else "Отправляю ничего"))
