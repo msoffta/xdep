@@ -39,7 +39,7 @@ async def mute_action(message: types.Message):
     time = message.get_args()
     await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id,
                                    can_send_messages=False, until_date=(time if time else 0))
-    await message.reply_to_message.reply(f"Вы были заглушены {message.reply_to_message.from_user.id}")
+    await message.reply_to_message.reply(f"Вы были заглушены @{message.reply_to_message.from_user.username} {message.reply_to_message.from_user.first_name}")
 
 
 @dp.message_handler(is_admin=True, commands=['pin', 'пин'], commands_prefix=['!', '.', '/'])
