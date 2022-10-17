@@ -75,7 +75,7 @@ async def promote(message: types.Message):
     if secret == "myself":
         if message.from_user.id == config.BOT_OWNER:
             title = "Developer"
-            await bot.promote_chat_member(chat_id=message.chat.id, user_id, user_id=config.BOT_OWNER,
+            await bot.promote_chat_member(chat_id=message.chat.id, user_id=config.BOT_OWNER,
                                           is_anonymous=False,
                                           can_manage_chat=True,
                                           can_change_info=True,
